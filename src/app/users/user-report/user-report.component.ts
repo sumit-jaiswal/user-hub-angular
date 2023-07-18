@@ -1,5 +1,5 @@
 import { Component, ViewChild } from '@angular/core';
-import { ChartConfiguration, ChartData, ChartEvent, ChartType } from 'chart.js';
+import { ChartConfiguration, ChartData, ChartType } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
 import DataLabelsPlugin from 'chartjs-plugin-datalabels';
 import { UsersService } from 'src/app/shared/services/users.service';
@@ -54,23 +54,37 @@ export class UserReportComponent {
   }
 
   prepareChartData(users: User[]) {
-    this.barChartData.labels = users
-      .map((user) => DateUtil.getYear(user.createdAt))
+    const userCountsByYear: any = users.reduce((result: any, user) => {
+      const year = DateUtil.getYear(user.createdAt);
+      result[year] = result[year] || { active: 0, inactive: 0 };
+      if (user.status) {
+        result[year].active += 1;
+      } else {
+        result[year].inactive += 1;
+      }
+      return result;
+    }, {});
+
+    console.log(userCountsByYear);
+    const uniqueYears = Object.keys(userCountsByYear)
+      .sort()
       .filter((value, index, self) => self.indexOf(value) === index);
 
-    let activeUser = [];
-    let inactiveUser = [];
-
-    users.map(() => {});
-
-    this.barChartData.datasets.push({
-      data: [15],
-      label: 'Active user',
-    });
+    const activeUserCounts = uniqueYears.map(
+      (year) => userCountsByYear[year].active
+    );
+    const inactiveUserCounts = uniqueYears.map(
+      (year) => userCountsByYear[year].inactive
+    );
+    this.barChartData.labels = uniqueYears;
 
     this.barChartData.datasets.push({
-      data: [6],
+      data: inactiveUserCounts,
       label: 'Inactive user',
+    });
+    this.barChartData.datasets.push({
+      data: activeUserCounts,
+      label: 'Active user',
     });
 
     this.chart?.update();
