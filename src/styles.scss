@@ -1,4 +1,49 @@
 /* You can add global styles to this file, and also import other style files */
+@import "~@angular/material/prebuilt-themes/indigo-pink.css";
 
-html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+body {
+  margin: 0;
+}
+
+mat-toolbar {
+  height: 64px;
+}
+
+footer {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+}
+
+main {
+  padding: 20px;
+}
+
+.content {
+  min-height: calc(100vh - 168px);
+  margin-bottom: 48px;
+}
+
+// login page
+app-login {
+  display: flex;
+  justify-content: center;
+}
+.login-box {
+  mat-card {
+    padding: 5rem;
+  }
+}
+
+.container {
+  & .mat-divider {
+    margin-bottom: 2rem;
+  }
+}
+
+.user-table-img {
+  display: inline-block;
+  vertical-align: middle;
+  border-radius: 50%;
+  width: 50px;
+}
