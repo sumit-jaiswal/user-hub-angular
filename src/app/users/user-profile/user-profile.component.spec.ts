@@ -1,6 +1,11 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { UserProfileComponent } from './user-profile.component';
+import { UsersModule } from '../users.module';
+import { AuthService } from 'src/app/core/auth/auth.service';
+import { SocialAuthServiceConfigMock } from 'src/app/testing/social-auth.mock';
+import { SocialLoginModule } from '@abacritt/angularx-social-login';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('UserProfileComponent', () => {
   let component: UserProfileComponent;
@@ -8,9 +13,9 @@ describe('UserProfileComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ UserProfileComponent ]
-    })
-    .compileComponents();
+      imports: [UsersModule, SocialLoginModule, HttpClientTestingModule],
+      providers: [AuthService, SocialAuthServiceConfigMock],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(UserProfileComponent);
     component = fixture.componentInstance;

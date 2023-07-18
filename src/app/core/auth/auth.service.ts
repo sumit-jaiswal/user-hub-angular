@@ -3,9 +3,11 @@ import {
   SocialAuthService,
   SocialUser,
 } from '@abacritt/angularx-social-login';
+import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable, map } from 'rxjs';
+import { environment } from 'src/environments/environment';
 
 @Injectable({
   providedIn: 'root',
@@ -21,7 +23,11 @@ export class AuthService {
   public loginUser$: Observable<SocialUser> =
     this.loginUserSubject.asObservable();
 
-  constructor(private authService: SocialAuthService, private router: Router) {
+  constructor(
+    private authService: SocialAuthService,
+    private router: Router,
+    private http: HttpClient
+  ) {
     this.authService.authState.subscribe((user) => {
       console.log('user', user);
       this.loginUserSubject.next(user);
@@ -54,8 +60,26 @@ export class AuthService {
     return localStorage.getItem('token') || '';
   }
 
-  refreshToken(): void {
-    this.authService.signIn(GoogleLoginProvider.PROVIDER_ID);
-    // this.authService.refreshAuthToken(GoogleLoginProvider.PROVIDER_ID);
+  refreshToken() {
+    const encodedIdToken = encodeURIComponent(this.getToken());
+    return this.http
+      .get<any>(
+        `https://oauth2.googleapis.com/tokeninfo?id_token=${encodedIdToken}`
+      )
+      .pipe(
+        map((user) => {
+          console.log(user);
+          this.loginUserSubject.next(user);
+          return user;
+        })
+      );
+  }
+
+  // Method to validate the token
+  public validateToken(): Observable<boolean> {
+    const encodedIdToken = encodeURIComponent(this.getToken());
+    return this.http.get<boolean>(
+      `${environment.auth_uri}?id_token=${encodedIdToken}`
+    );
   }
 }
