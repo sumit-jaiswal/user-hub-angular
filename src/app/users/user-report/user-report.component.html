@@ -1,0 +1,13 @@
+<div class="user-bar-chart">
+  <h2>Users active/In-active report</h2>
+  <mat-divider></mat-divider>
+  <canvas
+    baseChart
+    class="chart"
+    [data]="barChartData"
+    [options]="barChartOptions"
+    [plugins]="barChartPlugins"
+    [type]="barChartType"
+  >
+  </canvas>
+</div>
