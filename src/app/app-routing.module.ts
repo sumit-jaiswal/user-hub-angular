@@ -1,10 +1,27 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
+import { NotFoundComponent } from './core/theme/not-found/not-found.component';
+import { LoginComponent } from './core/auth/login/login.component';
+import { AuthGuard } from './core/auth/auth-guard.service';
 
-const routes: Routes = [];
+const routes: Routes = [
+  { path: '', redirectTo: 'users', pathMatch: 'full' }, // Set default path to 'users'
+  {
+    path: 'login',
+    component: LoginComponent,
+  },
+  {
+    path: 'users',
+    loadChildren: () =>
+      import('./users/users.module').then((m) => m.UsersModule),
+    canActivate: [AuthGuard],
+  },
+  { path: 'not-found', component: NotFoundComponent }, // Add 'not-found' path
+  { path: '**', redirectTo: 'not-found' }, // Redirect all other unknown paths to 'not-found'
+];
 
 @NgModule({
   imports: [RouterModule.forRoot(routes)],
-  exports: [RouterModule]
+  exports: [RouterModule],
 })
-export class AppRoutingModule { }
+export class AppRoutingModule {}
