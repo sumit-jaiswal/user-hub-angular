@@ -2,8 +2,16 @@ import { AfterViewInit, Component, OnInit, ViewChild } from '@angular/core';
 import { PageEvent } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
-import { Observable, map, switchMap, tap } from 'rxjs';
+import {
+  BehaviorSubject,
+  Observable,
+  finalize,
+  map,
+  switchMap,
+  tap,
+} from 'rxjs';
 import { User } from 'src/app/shared/models/user.model';
+import { LoadingService } from 'src/app/shared/services/loading.service';
 import { UsersService } from 'src/app/shared/services/users.service';
 
 @Component({
@@ -17,10 +25,14 @@ export class UserListComponent implements OnInit, AfterViewInit {
   pageSize: number = 10;
   pageIndex: number = 0;
   totalUsers: number = 0;
+  isLoading$: Observable<boolean> = new BehaviorSubject(false);
 
   @ViewChild(MatSort) sort: MatSort | undefined;
 
-  constructor(private usersService: UsersService) {}
+  constructor(
+    private usersService: UsersService,
+    private loadingService: LoadingService
+  ) {}
 
   ngOnInit(): void {
     this.getUsers();
@@ -37,11 +49,13 @@ export class UserListComponent implements OnInit, AfterViewInit {
    * If the API provides the total count in the pagination response, we can optimize the code to make a single API call.
    */
   getUsers(): void {
+    this.loadingService.loadingOn();
     this.usersService
       .getUsers()
       .pipe(
         tap((users) => (this.totalUsers = users.length)),
-        switchMap(() => this.getPaginationData())
+        switchMap(() => this.getPaginationData()),
+        finalize(() => this.loadingService.loadingOff())
       )
       .subscribe((users) => {
         this.users = new MatTableDataSource(users);
@@ -50,17 +64,19 @@ export class UserListComponent implements OnInit, AfterViewInit {
   }
 
   getPaginationData() {
-    let users$ = this.usersService.getUsers(this.pageIndex, this.pageSize);
-    users$.subscribe((users) => {
-      this.users = new MatTableDataSource(users);
-      if (this.sort) this.users.sort = this.sort;
-    });
-    return users$;
+    return this.usersService.getUsers(this.pageIndex, this.pageSize);
   }
 
   onPageChange(event: PageEvent): void {
     this.pageIndex = event.pageIndex;
     this.pageSize = event.pageSize;
-    this.getPaginationData();
+
+    this.loadingService.loadingOn();
+    this.getPaginationData()
+      .pipe(finalize(() => this.loadingService.loadingOff()))
+      .subscribe((users) => {
+        this.users = new MatTableDataSource(users);
+        if (this.sort) this.users.sort = this.sort;
+      });
   }
 }

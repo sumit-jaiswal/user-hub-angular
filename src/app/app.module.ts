@@ -1,4 +1,4 @@
-import { NgModule } from '@angular/core';
+import { APP_INITIALIZER, NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 
 import { AppRoutingModule } from './app-routing.module';
@@ -6,7 +6,7 @@ import { AppComponent } from './app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MaterialModule } from './shared/material.module';
 import { CoreModule } from './core/core.module';
-import { HttpClientModule } from '@angular/common/http';
+import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import {
   GoogleLoginProvider,
   GoogleSigninButtonModule,
@@ -14,6 +14,9 @@ import {
   SocialLoginModule,
 } from '@abacritt/angularx-social-login';
 import { AuthGuard } from './core/auth/auth-guard.service';
+import { AuthInterceptor } from './core/http/auth-interceptor.service';
+import { authConfig } from './core/auth/config/auth-config';
+import { ReactiveFormsModule } from '@angular/forms';
 
 @NgModule({
   declarations: [AppComponent],
@@ -26,6 +29,7 @@ import { AuthGuard } from './core/auth/auth-guard.service';
     HttpClientModule,
     SocialLoginModule,
     GoogleSigninButtonModule,
+    ReactiveFormsModule,
   ],
   providers: [
     {
@@ -35,15 +39,18 @@ import { AuthGuard } from './core/auth/auth-guard.service';
         providers: [
           {
             id: GoogleLoginProvider.PROVIDER_ID,
-            provider: new GoogleLoginProvider(
-              '60528208097-0m6p833tdtob9gcgvmr01iqi8d6c5bsn.apps.googleusercontent.com'
-            ),
+            provider: new GoogleLoginProvider(authConfig.clientId),
           },
         ],
         onError: (err) => {
           console.error(err);
         },
       } as SocialAuthServiceConfig,
+    },
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: AuthInterceptor,
+      multi: true,
     },
     AuthGuard,
   ],

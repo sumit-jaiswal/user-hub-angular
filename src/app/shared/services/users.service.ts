@@ -16,6 +16,10 @@ export class UsersService {
       params = params.append('page', (pageIndex + 1).toString());
       params = params.append('limit', pageSize.toString());
     }
-    return this.http.get<User[]>(environment.apiUrl + '/users', { params });
+    return this.http.get<User[]>(environment.apiUrl + 'users', { params });
+  }
+
+  addUser(user: User): Observable<User> {
+    return this.http.post<User>(environment.apiUrl + 'users', user);
   }
 }

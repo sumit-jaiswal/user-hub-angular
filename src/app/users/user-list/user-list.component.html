@@ -2,6 +2,7 @@
   <h2>User List</h2>
   <mat-divider></mat-divider>
 
+  <app-loading></app-loading>
   <div class="user-list" *ngIf="users">
     <table mat-table [dataSource]="users" matSort class="mat-elevation-z8">
       <ng-container matColumnDef="id">

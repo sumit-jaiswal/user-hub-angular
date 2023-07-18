@@ -1,0 +1,49 @@
+<div class="add-user-form container">
+  <h2>Add user</h2>
+  <mat-divider></mat-divider>
+  <mat-card>
+    <ng-container *ngIf="userForm">
+      <form [formGroup]="userForm" (ngSubmit)="onSubmit()">
+        <mat-form-field>
+          <mat-label>Name</mat-label>
+          <input matInput formControlName="name" />
+          <mat-error
+            *ngIf="
+              userForm?.get('name')?.invalid && userForm.get('name')?.touched
+            "
+          >
+            Name is required.
+          </mat-error>
+        </mat-form-field>
+        <mat-form-field>
+          <mat-label>Email</mat-label>
+          <input matInput formControlName="email" />
+          <mat-error
+            *ngIf="
+              userForm?.get('email')?.invalid && userForm.get('email')?.touched
+            "
+          >
+            <span *ngIf="userForm?.get('email')?.hasError('required')"
+              >Email is required.</span
+            >
+            <span *ngIf="userForm?.get('email')?.hasError('email')"
+              >Invalid email format.</span
+            >
+          </mat-error>
+        </mat-form-field>
+        <button
+          mat-raised-button
+          color="primary"
+          type="submit"
+          [disabled]="userForm.invalid"
+        >
+          Add User
+        </button>
+
+        <mat-error *ngIf="isFailed">
+          <span>Failed to add the user. Please try again later.</span>
+        </mat-error>
+      </form>
+    </ng-container>
+  </mat-card>
+</div>

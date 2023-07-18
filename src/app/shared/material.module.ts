@@ -11,7 +11,9 @@ import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatSortModule } from '@angular/material/sort';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatListModule } from '@angular/material/list';
-
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 @NgModule({
   exports: [
     MatIconModule,
@@ -26,6 +28,10 @@ import { MatListModule } from '@angular/material/list';
     MatPaginatorModule,
     MatSidenavModule,
     MatListModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatIconModule,
+    MatProgressBarModule,
   ],
 })
 export class MaterialModule {}

@@ -1,0 +1,12 @@
+.add-user-form {
+  mat-form-field {
+    + {
+      mat-form-field {
+        padding: 1rem;
+      }
+    }
+  }
+  mat-card {
+    padding: 4rem;
+  }
+}
