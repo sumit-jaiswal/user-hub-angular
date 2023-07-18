@@ -1,0 +1,22 @@
+<mat-toolbar color="primary">
+  <mat-toolbar-row>
+    <!-- <button mat-icon-button>
+      <mat-icon>menu</mat-icon>
+    </button> -->
+
+    <span>User Hub</span>
+    <span class="spacer"></span>
+
+    <ng-container *ngIf="isAuthenticated$ | async">
+      <button mat-button [routerLink]="'/users'">Users</button>
+      <button mat-button [routerLink]="'/users/report'">Report</button>
+      <button mat-icon-button [matMenuTriggerFor]="menu">
+        <mat-icon>account_circle</mat-icon>
+      </button>
+      <mat-menu #menu="matMenu">
+        <button mat-menu-item [routerLink]="'/users/profile'">Profile</button>
+        <button mat-menu-item (click)="logOut()">Logout</button>
+      </mat-menu>
+    </ng-container>
+  </mat-toolbar-row>
+</mat-toolbar>
