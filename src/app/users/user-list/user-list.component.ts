@@ -14,7 +14,6 @@ import {
   Subject,
   debounceTime,
   finalize,
-  map,
   switchMap,
   takeUntil,
   tap,
@@ -22,7 +21,10 @@ import {
 import { User } from 'src/app/shared/models/user.model';
 import { LoadingService } from 'src/app/shared/services/loading.service';
 import { UsersService } from 'src/app/shared/services/users.service';
-
+/**
+ * UserListComponent
+ * This component represents the user list page, displaying a table with user data.
+ */
 @Component({
   selector: 'app-user-list',
   templateUrl: './user-list.component.html',

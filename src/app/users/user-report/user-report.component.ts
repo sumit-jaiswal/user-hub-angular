@@ -6,6 +6,10 @@ import { UsersService } from 'src/app/shared/services/users.service';
 import { User } from 'src/app/shared/models/user.model';
 import { DateUtil } from 'src/app/shared/utils/date.util';
 
+/**
+ * UserReportComponent
+ * This component represents a user report page that displays a bar chart with user data.
+ */
 @Component({
   selector: 'app-user-report',
   templateUrl: './user-report.component.html',

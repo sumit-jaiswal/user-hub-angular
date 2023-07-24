@@ -1,14 +1,20 @@
-import {
-  GoogleLoginProvider,
-  SocialAuthService,
-  SocialUser,
-} from '@abacritt/angularx-social-login';
+import { SocialAuthService, SocialUser } from '@abacritt/angularx-social-login';
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { BehaviorSubject, Observable, map } from 'rxjs';
 import { environment } from 'src/environments/environment';
 
+/**
+ * AuthService
+ *
+ * This service handles authentication-related functionalities, including login, logout,
+ * token management, and checking the authentication status. It interacts with the
+ * `@abacritt/angularx-social-login` library to handle social logins and stores the
+ * login state using BehaviorSubject. It also provides methods to refresh and validate
+ * tokens with the backend auth server. The service is provided at the root level to ensure
+ * a singleton instance throughout the application.
+ */
 @Injectable({
   providedIn: 'root',
 })
@@ -51,11 +57,13 @@ export class AuthService {
     this.loginUserSubject.next(user);
   }
 
+  //log in the user with a token and update the authentication status
   login(token: string): void {
     localStorage.setItem('token', token);
     this.isAuthenticatedSubject.next(true);
   }
 
+  // log out the user, clear the token, and navigate to the login page
   logout(): void {
     localStorage.removeItem('token');
     this.isAuthenticatedSubject.next(false);
@@ -63,29 +71,17 @@ export class AuthService {
     this.router.navigate(['/login']);
   }
 
+  // check if the user is authenticated based on the presence of a token
   isAuthenticated(): boolean {
     const token = localStorage.getItem('token');
     return !!token;
   }
-
+  // get the stored token from local storage
   getToken(): string {
     return localStorage.getItem('token') || '';
   }
 
-  refreshToken() {
-    const encodedIdToken = encodeURIComponent(this.getToken());
-    return this.http
-      .get<any>(
-        `https://oauth2.googleapis.com/tokeninfo?id_token=${encodedIdToken}`
-      )
-      .pipe(
-        map((user) => {
-          this.loginUserSubject.next(user);
-          return user;
-        })
-      );
-  }
-
+  // validate the user's token with the backend server
   public validateToken(): Observable<any> {
     const token = encodeURIComponent(this.getToken());
     return this.http.post<any>(`${environment.auth_uri}validate-token`, {

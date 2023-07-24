@@ -111,26 +111,6 @@ describe('AuthService', () => {
     expect(result).toBe(mockToken);
   });
 
-  it('should call refreshToken API and update loginUserSubject', () => {
-    const mockToken = 'mock_token';
-    spyOn(authService, 'getToken').and.returnValue(mockToken);
-    spyOn(authService['http'], 'get').and.returnValue(
-      of({
-        id: '123',
-        name: 'John Doe',
-        email: 'john@example.com',
-        photoUrl: 'avatar_url',
-        provider: 'google',
-      })
-    );
-
-    const spyNext = spyOn(authService.loginUserSubject, 'next');
-
-    authService.refreshToken().subscribe((user) => {
-      expect(spyNext).toHaveBeenCalledOnceWith(user);
-    });
-  });
-
   it('should make a POST request to validate the token', () => {
     const mockToken = 'mock_token';
     spyOn(authService, 'getToken').and.returnValue(mockToken);
