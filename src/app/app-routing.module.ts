@@ -16,8 +16,8 @@ const routes: Routes = [
       import('./users/users.module').then((m) => m.UsersModule),
     canActivate: [AuthGuard],
   },
-  { path: 'not-found', component: NotFoundComponent }, // Add 'not-found' path
-  { path: '**', redirectTo: 'not-found' }, // Redirect all other unknown paths to 'not-found'
+  { path: 'not-found', component: NotFoundComponent },
+  { path: '**', redirectTo: 'not-found' },
 ];
 
 @NgModule({
