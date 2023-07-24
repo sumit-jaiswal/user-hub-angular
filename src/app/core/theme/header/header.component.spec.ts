@@ -14,6 +14,7 @@ import { RouterTestingModule } from '@angular/router/testing';
 describe('HeaderComponent', () => {
   let component: HeaderComponent;
   let fixture: ComponentFixture<HeaderComponent>;
+  let authService: AuthService;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -30,10 +31,17 @@ describe('HeaderComponent', () => {
 
     fixture = TestBed.createComponent(HeaderComponent);
     component = fixture.componentInstance;
+    authService = TestBed.inject(AuthService);
     fixture.detectChanges();
   });
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('should call authService.logout when logOut is invoked', () => {
+    spyOn(authService, 'logout');
+    component.logOut();
+    expect(authService.logout).toHaveBeenCalled();
   });
 });
