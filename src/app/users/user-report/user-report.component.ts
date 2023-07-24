@@ -16,7 +16,6 @@ export class UserReportComponent {
 
   public barChartOptions: ChartConfiguration['options'] = {
     responsive: true,
-    // We use these empty structures as placeholders for dynamic theming.
     scales: {
       x: {},
       y: {
@@ -65,7 +64,6 @@ export class UserReportComponent {
       return result;
     }, {});
 
-    console.log(userCountsByYear);
     const uniqueYears = Object.keys(userCountsByYear)
       .sort()
       .filter((value, index, self) => self.indexOf(value) === index);

@@ -15,10 +15,6 @@ footer {
   width: 100%;
 }
 
-main {
-  padding: 20px;
-}
-
 .content {
   min-height: calc(100vh - 168px);
   margin-bottom: 48px;
@@ -28,6 +24,7 @@ main {
 app-login {
   display: flex;
   justify-content: center;
+  margin-top: 1rem;
 }
 .login-box {
   mat-card {
@@ -36,14 +33,28 @@ app-login {
 }
 
 .container {
+  padding-top: 2rem;
   & .mat-divider {
     margin-bottom: 2rem;
   }
 }
 
-.user-table-img {
+.user-table-img,
+.user-profile-img {
   display: inline-block;
   vertical-align: middle;
   border-radius: 50%;
   width: 50px;
+}
+// container
+main {
+  padding: 0px 4rem;
+}
+.filter-container {
+  display: flex;
+  justify-content: space-between;
+}
+
+.action-button {
+  padding-bottom: 2rem;
 }
