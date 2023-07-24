@@ -2,8 +2,32 @@
   <h2>User List</h2>
   <mat-divider></mat-divider>
 
+  <div class="filter-container">
+    <button mat-fab extended color="primary" routerLink="add">
+      <mat-icon>add</mat-icon>
+      Add User
+    </button>
+    <mat-form-field>
+      <input
+        #filterInput
+        matInput
+        (input)="filterUsers($event)"
+        placeholder="Filter by name"
+      />
+      <button
+        *ngIf="filterInput.value"
+        matSuffix
+        mat-icon-button
+        aria-label="Clear"
+        (click)="cleanFilterInput(filterInput)"
+      >
+        <mat-icon>close</mat-icon>
+      </button>
+    </mat-form-field>
+  </div>
+
   <app-loading></app-loading>
-  <div class="user-list" *ngIf="users">
+  <div class="user-list">
     <table mat-table [dataSource]="users" matSort class="mat-elevation-z8">
       <ng-container matColumnDef="id">
         <th
@@ -51,6 +75,7 @@
     </table>
   </div>
   <mat-paginator
+    *ngIf="!_hidePagination"
     [length]="totalUsers"
     [pageSize]="pageSize"
     [pageSizeOptions]="[5, 10, 20]"
