@@ -28,15 +28,27 @@ export class AuthService {
     private router: Router,
     private http: HttpClient
   ) {
+    this.subscribeToAuthStateChanges();
+    this.checkAuthenticationStatus();
+  }
+
+  private subscribeToAuthStateChanges(): void {
     this.authService.authState.subscribe((user) => {
-      console.log('user', user);
-      this.loginUserSubject.next(user);
-      if (user) this.login(user?.idToken);
+      this.setLoginUser(user);
+      if (user) {
+        this.login(user.idToken);
+      }
     });
-    // On Page refresh
+  }
+
+  private checkAuthenticationStatus(): void {
     if (this.isAuthenticated()) {
       this.isAuthenticatedSubject.next(true);
     }
+  }
+
+  setLoginUser(user: SocialUser) {
+    this.loginUserSubject.next(user);
   }
 
   login(token: string): void {
@@ -68,18 +80,16 @@ export class AuthService {
       )
       .pipe(
         map((user) => {
-          console.log(user);
           this.loginUserSubject.next(user);
           return user;
         })
       );
   }
 
-  // Method to validate the token
-  public validateToken(): Observable<boolean> {
-    const encodedIdToken = encodeURIComponent(this.getToken());
-    return this.http.get<boolean>(
-      `${environment.auth_uri}?id_token=${encodedIdToken}`
-    );
+  public validateToken(): Observable<any> {
+    const token = encodeURIComponent(this.getToken());
+    return this.http.post<any>(`${environment.auth_uri}validate-token`, {
+      token,
+    });
   }
 }

@@ -1,85 +1,144 @@
 import { TestBed } from '@angular/core/testing';
+import { Router } from '@angular/router';
 import {
   HttpClientTestingModule,
   HttpTestingController,
 } from '@angular/common/http/testing';
-import { SocialAuthService } from '@abacritt/angularx-social-login';
-import { RouterTestingModule } from '@angular/router/testing';
 import { AuthService } from './auth.service';
-import { environment } from 'src/environments/environment';
+import { SocialAuthService, SocialUser } from '@abacritt/angularx-social-login';
+import { of } from 'rxjs';
 import { SocialAuthServiceConfigMock } from 'src/app/testing/social-auth.mock';
+import { environment } from 'src/environments/environment';
 
 describe('AuthService', () => {
-  let service: AuthService;
+  let authService: AuthService;
+  let socialAuthService: SocialAuthService;
+  let router: Router;
   let httpMock: HttpTestingController;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule, RouterTestingModule],
-      providers: [AuthService, SocialAuthService, SocialAuthServiceConfigMock],
+      imports: [HttpClientTestingModule],
+      providers: [
+        AuthService,
+        SocialAuthService,
+        SocialAuthServiceConfigMock,
+        Router,
+      ],
     });
 
-    service = TestBed.inject(AuthService);
+    authService = TestBed.inject(AuthService);
+    socialAuthService = TestBed.inject(SocialAuthService);
     httpMock = TestBed.inject(HttpTestingController);
-  });
-
-  afterEach(() => {
-    httpMock.verify();
+    router = TestBed.inject(Router);
   });
 
   it('should be created', () => {
-    expect(service).toBeTruthy();
+    expect(authService).toBeTruthy();
   });
 
-  it('should call login and set isAuthenticatedSubject to true', () => {
-    spyOn(service['isAuthenticatedSubject'], 'next');
+  it('should update loginUserSubject with the provided user', () => {
+    const nextSpy = spyOn(authService['loginUserSubject'], 'next');
+    const sampleUser = {
+      provider: '',
+      id: '',
+      email: 'test@user.com',
+      name: 'test user',
+      photoUrl: '',
+      picture: '',
+      firstName: '',
+      lastName: '',
+      authToken: '',
+      idToken: '',
+      authorizationCode: '',
+      response: '',
+    };
+    authService.setLoginUser(sampleUser);
+    expect(nextSpy).toHaveBeenCalledWith(sampleUser);
+  });
+
+  it('should set login user and isAuthenticatedSubject when login is called', () => {
     spyOn(localStorage, 'setItem');
+    spyOn(authService['isAuthenticatedSubject'], 'next');
 
-    const token = 'sampleToken';
-    service.login(token);
+    const mockToken = 'mock_token';
+    authService.login(mockToken);
 
-    expect(localStorage.setItem).toHaveBeenCalledWith('token', token);
-    expect(service['isAuthenticatedSubject'].next).toHaveBeenCalledWith(true);
+    expect(localStorage.setItem).toHaveBeenCalledWith('token', mockToken);
+    expect(authService['isAuthenticatedSubject'].next).toHaveBeenCalledWith(
+      true
+    );
   });
 
-  it('should return true when token is present', () => {
-    spyOn(localStorage, 'getItem').and.returnValue('sampleToken');
+  it('should remove token, sign out, and navigate to login page when logout is called', () => {
+    spyOn(localStorage, 'removeItem');
+    spyOn(authService['isAuthenticatedSubject'], 'next');
+    spyOn(authService['authService'], 'signOut');
+    spyOn(router, 'navigate');
 
-    const result = service.isAuthenticated();
+    authService.logout();
+
+    expect(localStorage.removeItem).toHaveBeenCalledWith('token');
+    expect(authService['isAuthenticatedSubject'].next).toHaveBeenCalledWith(
+      false
+    );
+    expect(authService['authService'].signOut).toHaveBeenCalled();
+    expect(router.navigate).toHaveBeenCalledWith(['/login']);
+  });
+
+  it('should return true if token exists in localStorage', () => {
+    spyOn(localStorage, 'getItem').and.returnValue('mock_token');
+
+    const result = authService.isAuthenticated();
 
     expect(result).toBe(true);
   });
 
-  it('should return false when token is not present', () => {
+  it('should return false if token does not exist in localStorage', () => {
     spyOn(localStorage, 'getItem').and.returnValue(null);
 
-    const result = service.isAuthenticated();
+    const result = authService.isAuthenticated();
 
     expect(result).toBe(false);
   });
 
-  it('should return the token from localStorage', () => {
-    const token = 'sampleToken';
-    spyOn(localStorage, 'getItem').and.returnValue(token);
+  it('should return token from localStorage when getToken is called', () => {
+    const mockToken = 'mock_token';
+    spyOn(localStorage, 'getItem').and.returnValue(mockToken);
 
-    const result = service.getToken();
+    const result = authService.getToken();
 
-    expect(result).toBe(token);
+    expect(result).toBe(mockToken);
   });
 
-  it('should call the validateToken API and return the response', () => {
-    const dummyResponse = true;
-
-    service.validateToken().subscribe((result) => {
-      expect(result).toBe(dummyResponse);
-    });
-
-    const req = httpMock.expectOne(
-      `${environment.auth_uri}?id_token=${encodeURIComponent(
-        service.getToken()
-      )}`
+  it('should call refreshToken API and update loginUserSubject', () => {
+    const mockToken = 'mock_token';
+    spyOn(authService, 'getToken').and.returnValue(mockToken);
+    spyOn(authService['http'], 'get').and.returnValue(
+      of({
+        id: '123',
+        name: 'John Doe',
+        email: 'john@example.com',
+        photoUrl: 'avatar_url',
+        provider: 'google',
+      })
     );
-    expect(req.request.method).toBe('GET');
-    req.flush(dummyResponse);
+
+    const spyNext = spyOn(authService.loginUserSubject, 'next');
+
+    authService.refreshToken().subscribe((user) => {
+      expect(spyNext).toHaveBeenCalledOnceWith(user);
+    });
+  });
+
+  it('should make a POST request to validate the token', () => {
+    const mockToken = 'mock_token';
+    spyOn(authService, 'getToken').and.returnValue(mockToken);
+
+    authService.validateToken().subscribe();
+
+    const req = httpMock.expectOne(`${environment.auth_uri}validate-token`);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({ token: mockToken });
   });
 });
