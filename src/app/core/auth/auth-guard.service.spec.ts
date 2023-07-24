@@ -1,66 +1,99 @@
 import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
+import { of } from 'rxjs';
 import { AuthService } from './auth.service';
-import { AuthGuard } from './auth-guard.service';
 import { SocialLoginModule } from '@abacritt/angularx-social-login';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { AuthGuard } from './auth-guard.service';
 import { SocialAuthServiceConfigMock } from 'src/app/testing/social-auth.mock';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { RouterTestingModule } from '@angular/router/testing';
 
 describe('AuthGuard', () => {
-  let guard: AuthGuard;
-  let authService: jasmine.SpyObj<AuthService>;
-  let router: jasmine.SpyObj<Router>;
+  let authGuard: AuthGuard;
+  let authService: AuthService;
+  let router: Router;
 
   beforeEach(() => {
-    const authServiceSpy = jasmine.createSpyObj('AuthService', [
-      'isAuthenticated',
-    ]);
-    const routerSpy = jasmine.createSpyObj('Router', ['navigate']);
-
     TestBed.configureTestingModule({
-      imports: [SocialLoginModule, HttpClientTestingModule],
-      providers: [
-        AuthGuard,
-        { provide: AuthService, useValue: authServiceSpy },
-        { provide: Router, useValue: routerSpy },
-        SocialAuthServiceConfigMock,
+      imports: [
+        SocialLoginModule,
+        HttpClientTestingModule,
+        RouterTestingModule,
       ],
+      providers: [AuthGuard, AuthService, SocialAuthServiceConfigMock],
     });
 
-    guard = TestBed.inject(AuthGuard);
-    authService = TestBed.inject(AuthService) as jasmine.SpyObj<AuthService>;
-    router = TestBed.inject(Router) as jasmine.SpyObj<Router>;
+    authGuard = TestBed.inject(AuthGuard);
+    authService = TestBed.inject(AuthService);
+    router = TestBed.inject(Router);
   });
 
   it('should be created', () => {
-    expect(guard).toBeTruthy();
+    expect(authGuard).toBeTruthy();
   });
 
-  it('should return true and not navigate if user is authenticated', () => {
-    // Arrange
-    authService.isAuthenticated.and.returnValue(true);
+  it('should allow access and setLoginUser when user is authenticated and token is valid', (done) => {
+    const mockUser = {
+      provider: '',
+      id: '',
+      email: 'test@user.com',
+      name: 'test user',
+      photoUrl: '',
+      picture: '',
+      firstName: '',
+      lastName: '',
+      authToken: '',
+      idToken: '',
+      authorizationCode: '',
+      response: '',
+    };
+    spyOn(authService, 'isAuthenticated').and.returnValue(true);
+    spyOn(authService, 'validateToken').and.returnValue(
+      of({ payload: mockUser })
+    );
+    spyOn(authService, 'setLoginUser');
+    spyOn(authService, 'logout');
+    spyOn(console, 'error');
 
-    // Act
-    const canActivate = guard.canActivate();
-
-    // Assert
-    canActivate.subscribe((result) => {
-      expect(result).toBeTrue();
-      expect(router.navigate).not.toHaveBeenCalled();
+    authGuard.canActivate().subscribe((result) => {
+      expect(result).toBe(true);
+      expect(authService.setLoginUser).toHaveBeenCalledWith(mockUser);
+      expect(authService.logout).not.toHaveBeenCalled();
+      expect(console.error).not.toHaveBeenCalled();
+      done();
     });
   });
 
-  it('should return false and navigate to login if user is not authenticated', () => {
-    // Arrange
-    authService.isAuthenticated.and.returnValue(false);
+  it('should navigate to /login and return false when user is not authenticated', (done) => {
+    spyOn(authService, 'isAuthenticated').and.returnValue(false);
+    spyOn(router, 'navigate');
+    spyOn(authService, 'validateToken');
+    spyOn(authService, 'setLoginUser');
+    spyOn(authService, 'logout');
+    spyOn(console, 'error');
 
-    // Act
-    const canActivate = guard.canActivate();
-
-    // Assert
-    canActivate.subscribe((result) => {
-      expect(result).toBeFalse();
+    authGuard.canActivate().subscribe((result) => {
+      expect(result).toBe(false);
       expect(router.navigate).toHaveBeenCalledWith(['/login']);
+      expect(authService.validateToken).not.toHaveBeenCalled();
+      expect(authService.setLoginUser).not.toHaveBeenCalled();
+      expect(authService.logout).not.toHaveBeenCalled();
+      expect(console.error).not.toHaveBeenCalled();
+      done();
+    });
+  });
+
+  it('should logout and return false if payload is undefined', (done) => {
+    spyOn(authService, 'isAuthenticated').and.returnValue(true);
+    spyOn(authService, 'validateToken').and.returnValue(
+      of({ payload: undefined })
+    );
+    spyOn(authService, 'logout');
+
+    authGuard.canActivate().subscribe((result) => {
+      expect(result).toBe(false);
+      expect(authService.logout).toHaveBeenCalled();
+      done();
     });
   });
 });
