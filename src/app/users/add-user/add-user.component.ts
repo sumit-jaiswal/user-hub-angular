@@ -17,16 +17,17 @@ export class AddUserComponent implements OnInit {
   ) {}
 
   ngOnInit() {
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
     this.userForm = this.formBuilder.group({
       name: ['', Validators.required],
-      email: ['', [Validators.required, Validators.email]],
+      email: ['', [Validators.required, Validators.pattern(emailRegex)]],
     });
   }
 
   onSubmit() {
     this.usersService.addUser(this.userForm?.value).subscribe(
       () => {
-        console.log('User-added', this.userForm?.value);
         this.isFailed = false;
       },
       () => {
