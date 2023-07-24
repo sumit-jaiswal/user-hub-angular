@@ -28,7 +28,17 @@ describe('LoadingComponent', () => {
     const fixture = TestBed.createComponent(LoadingComponent);
     loader.loadingOn();
     fixture.detectChanges();
-    const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('progress-spinner')).toBeDefined();
+    const progressBarElement =
+      fixture.nativeElement.querySelector('mat-progress-bar');
+    expect(progressBarElement).toBeTruthy();
+  });
+
+  it('should hide display loader', () => {
+    const fixture = TestBed.createComponent(LoadingComponent);
+    loader.loadingOff();
+    fixture.detectChanges();
+    const progressBarElement =
+      fixture.nativeElement.querySelector('mat-progress-bar');
+    expect(progressBarElement).toBeFalsy();
   });
 });
